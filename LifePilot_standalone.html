@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>LifePilot — Personal Dashboard</title>
+<style>
+:root{--navy:#172554;--blue:#2563eb;--bg:#f4f7fb;--card:#fff;--ink:#182230;--muted:#667085;--line:#e5eaf2;--green:#16845b;--red:#c2414b;--gold:#b7791f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#172554,#1d4ed8);color:white;padding:25px 18px 20px}
+.wrap{max-width:1100px;margin:auto}header .top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:27px;margin:0 0 4px}header p{margin:0;color:#dbeafe}.date-pill{border:1px solid #ffffff55;border-radius:999px;padding:8px 12px;font-size:13px}
+nav{display:flex;gap:8px;overflow:auto;padding:12px 16px;background:white;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}
+nav button{border:0;background:#eef2ff;color:#263b73;border-radius:10px;padding:10px 13px;font-weight:650;white-space:nowrap;cursor:pointer}
+nav button.active{background:var(--navy);color:white}
+main{max-width:1100px;margin:20px auto;padding:0 15px 40px}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:0 3px 14px #1e293b08;min-width:0}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+h2{font-size:19px;margin:0 0 13px}h3{font-size:15px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.metric{background:white;border:1px solid var(--line);border-radius:15px;padding:15px}.metric .label{color:var(--muted);font-size:12px}.metric .num{font-size:23px;font-weight:800;margin-top:4px;overflow-wrap:anywhere}
+form{display:grid;gap:10px}label{font-size:13px;font-weight:650;color:#344054;display:block;margin-bottom:4px}
+input,select,textarea{font:inherit;width:100%;border:1px solid #d0d7e2;border-radius:10px;padding:10px 11px;background:white;color:var(--ink)}
+textarea{resize:vertical;min-height:82px}input[type=checkbox]{width:auto}input[type=file]{padding:8px;font-size:13px}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+button.primary{background:var(--blue);color:white;border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
+button.secondary{background:#eef2f7;color:#344054;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-weight:650;cursor:pointer}
+button.danger{background:#fff0f0;color:#a11;border:1px solid #f4caca;border-radius:9px;padding:6px 9px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.list{display:grid;gap:8px}.item{border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}.item .main{margin:0;padding:0;min-width:0}.item-title{font-weight:700}.item small{display:block;color:var(--muted);margin-top:3px}.item.done{opacity:.58}.item.done .item-title{text-decoration:line-through}
+.tag{display:inline-block;border-radius:999px;background:#eef2ff;color:#314b8b;padding:3px 8px;font-size:11px;font-weight:700}.money-in{color:var(--green);font-weight:750}.money-out{color:var(--red);font-weight:750}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:#475467;background:#f8fafc;font-weight:700}td.num{text-align:right;font-variant-numeric:tabular-nums}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.photo{border:1px solid var(--line);border-radius:12px;overflow:hidden}.photo img{width:100%;height:120px;object-fit:cover;display:block}.photo div{padding:8px;font-size:12px}
+.progress{height:8px;background:#e9eef6;border-radius:99px;overflow:hidden;margin:7px 0 12px}.progress span{height:100%;display:block;background:linear-gradient(90deg,#2563eb,#22c55e)}
+.empty{padding:20px;text-align:center;color:var(--muted);border:1px dashed #cbd5e1;border-radius:12px}
+.notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:11px 13px;border-radius:12px;font-size:13px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#172554;color:white;padding:11px 16px;border-radius:999px;display:none;z-index:20;box-shadow:0 5px 20px #0002}
+@media(max-width:720px){.metrics{grid-template-columns:repeat(2,1fr)}.span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}.row,.row3{grid-template-columns:1fr 1fr}h1{font-size:23px}.card{padding:14px}}
+@media(max-width:430px){.row,.row3{grid-template-columns:1fr}.metric .num{font-size:20px}}
+</style>
+</head>
+<body>
+<header><div class="wrap top"><div><h1>✦ LifePilot</h1><p>Your schedule, money, health and memories — in one place.</p></div><div class="date-pill" id="todayPill"></div></div></header>
+<nav id="nav">
+<button class="active" data-page="home">🏠 Overview</button><button data-page="schedule">📅 Schedule</button><button data-page="money">💰 Money</button><button data-page="health">💪 Body & habits</button><button data-page="journal">🎙️ Voice & photos</button><button data-page="reports">📊 Weekly report</button>
+</nav>
+<main>
+<section id="home" class="page active">
+<div class="metrics">
+<div class="metric"><div class="label">Income this week</div><div class="num" id="mIncome">0</div><div class="muted">All recorded income</div></div>
+<div class="metric"><div class="label">Expenses this week</div><div class="num" id="mExpense">0</div><div class="muted">Money spent</div></div>
+<div class="metric"><div class="label">Net this week</div><div class="num" id="mNet">0</div><div class="muted">Income minus expenses</div></div>
+<div class="metric"><div class="label">Tasks completed</div><div class="num" id="mTasks">0/0</div><div class="muted">Today's schedule</div></div>
+</div>
+<div class="grid">
+<div class="card span-7"><h2>Today's plan</h2><div id="homeTasks" class="list"></div><p><button class="primary" onclick="showPage('schedule')">+ Plan my day</button></p></div>
+<div class="card span-5"><h2>Daily check-in</h2><div class="muted">A small daily score keeps you consistent.</div><div style="margin-top:14px" id="habitSummary"></div><button class="secondary" onclick="showPage('health')">Update body & habits →</button></div>
+<div class="card span-12"><h2>Weekly focus</h2><div class="row"><div><label for="weeklyGoal">My main goal this week</label><input id="weeklyGoal" placeholder="e.g. save 300 somoni, exercise 3 times"></div><div><label for="weeklyGoalDate">Review date</label><input type="date" id="weeklyGoalDate"></div></div><button class="primary" style="margin-top:10px" onclick="saveGoal()">Save weekly goal</button><p id="goalDisplay" class="muted"></p></div>
+</div>
+</section>
+
+<section id="schedule" class="page">
+<div class="grid">
+<div class="card span-5"><h2>Add a schedule item</h2><form id="taskForm">
+<div><label for="taskTitle">Task / appointment</label><input id="taskTitle" required placeholder="e.g. study, work, walk"></div>
+<div class="row"><div><label for="taskDate">Date</label><input type="date" id="taskDate" required></div><div><label for="taskTime">Time</label><input type="time" id="taskTime"></div></div>
+<div class="row"><div><label for="taskCategory">Category</label><select id="taskCategory"><option>Work</option><option>Study</option><option>Health</option><option>Family</option><option>Business</option><option>Personal</option></select></div><div><label for="taskReminder">Priority</label><select id="taskPriority"><option>Normal</option><option>High</option><option>Low</option></select></div></div>
+<div><label for="taskNote">Notes (optional)</label><textarea id="taskNote" placeholder="Details, location, what to bring…"></textarea></div>
+<button class="primary">Add to schedule</button></form></div>
+<div class="card span-7"><h2>My schedule</h2><div class="row"><div><label for="scheduleFilter">Show date</label><input type="date" id="scheduleFilter"></div><div style="align-self:end"><button class="secondary" onclick="document.getElementById('scheduleFilter').value=today();renderTasks()">Today</button> <button class="secondary" onclick="document.getElementById('scheduleFilter').value='';renderTasks()">All</button></div></div><div id="taskList" class="list" style="margin-top:12px"></div></div>
+</div>
+</section>
+
+<section id="money" class="page">
+<div class="grid">
+<div class="card span-5"><h2>Record money</h2><form id="moneyForm">
+<div class="row"><div><label for="moneyType">Type</label><select id="moneyType"><option value="expense">Expense</option><option value="income">Income</option></select></div><div><label for="moneyAmount">Amount</label><input type="number" id="moneyAmount" min="0.01" step="0.01" required placeholder="0.00"></div></div>
+<div class="row"><div><label for="moneyDate">Date</label><input type="date" id="moneyDate" required></div><div><label for="moneyCategory">Category</label><select id="moneyCategory"><option>Food</option><option>Transport</option><option>Home / bills</option><option>Business</option><option>Health</option><option>Education</option><option>Shopping</option><option>Salary</option><option>Sales</option><option>Gift</option><option>Other</option></select></div></div>
+<div><label for="moneyTitle">What was it for?</label><input id="moneyTitle" required placeholder="e.g. groceries, customer payment"></div>
+<div><label for="moneyMethod">Payment method</label><select id="moneyMethod"><option>Cash</option><option>Card</option><option>Bank transfer</option><option>Other</option></select></div>
+<button class="primary">Save transaction</button></form></div>
+<div class="card span-7"><h2>Money snapshot</h2><div class="metrics" style="grid-template-columns:repeat(2,1fr)"><div class="metric"><div class="label">Income total</div><div class="num" id="allIncome">0</div></div><div class="metric"><div class="label">Expense total</div><div class="num" id="allExpense">0</div></div></div><h3>Transactions</h3><div id="moneyList" class="list"></div></div>
+</div>
+</section>
+
+<section id="health" class="page">
+<div class="grid">
+<div class="card span-5"><h2>Daily body & habit log</h2><form id="healthForm">
+<div><label for="healthDate">Date</label><input type="date" id="healthDate" required></div>
+<div class="row"><div><label for="water">Water (litres)</label><input type="number" min="0" max="20" step="0.1" id="water" placeholder="e.g. 2.0"></div><div><label for="sleep">Sleep (hours)</label><input type="number" min="0" max="24" step="0.25" id="sleep" placeholder="e.g. 7.5"></div></div>
+<div class="row"><div><label for="weight">Weight (kg)</label><input type="number" min="1" max="500" step="0.1" id="weight" placeholder="optional"></div><div><label for="steps">Steps</label><input type="number" min="0" id="steps" placeholder="optional"></div></div>
+<div class="row"><div><label for="exercise">Exercise (minutes)</label><input type="number" min="0" id="exercise" placeholder="e.g. 30"></div><div><label for="meals">Meals / snacks</label><input type="number" min="0" max="20" id="meals" placeholder="count"></div></div>
+<div><label for="foodNote">Food, physical consumption & notes</label><textarea id="foodNote" placeholder="What did you eat? Coffee, snacks, workout, energy, symptoms…"></textarea></div>
+<button class="primary">Save daily log</button></form><p class="muted">This is a personal habit journal, not medical advice. Enter only what you want to track.</p></div>
+<div class="card span-7"><h2>Recent daily logs</h2><div id="healthList" class="list"></div></div>
+</div>
+</section>
+
+<section id="journal" class="page">
+<div class="grid">
+<div class="card span-6"><h2>🎙️ Voice diary</h2><p class="muted">Record an idea, expense, reminder or end-of-day reflection. Microphone permission is required.</p>
+<div class="row"><div><label for="voiceTitle">Recording title</label><input id="voiceTitle" placeholder="e.g. idea for my business"></div><div><label for="voiceDate">Date</label><input id="voiceDate" type="date"></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="primary" id="recordBtn" type="button">● Start recording</button><button class="secondary" id="stopBtn" type="button" disabled>Stop</button></div><div id="recordStatus" class="muted">No recording in progress.</div><div id="voiceList" class="list" style="margin-top:12px"></div></div>
+<div class="card span-6"><h2>📷 Photo diary</h2><p class="muted">Attach a receipt, meal, workout progress, project photo or a memory.</p><form id="photoForm"><div><label for="photoTitle">Photo note</label><input id="photoTitle" placeholder="e.g. lunch, receipt, project progress"></div><div><label for="photoDate">Date</label><input id="photoDate" type="date" required></div><div><label for="photoFile">Choose photo</label><input id="photoFile" type="file" accept="image/*" capture="environment" required></div><button class="primary">Save photo</button></form><div id="photoList" class="photo-grid" style="margin-top:14px"></div></div>
+<div class="card span-12"><h2>Quick thought</h2><form id="noteForm"><div><label for="quickNote">Write anything you want to remember</label><textarea id="quickNote" placeholder="A lesson learned, idea, gratitude, something to do later…"></textarea></div><button class="primary">Save note</button></form><div id="noteList" class="list" style="margin-top:12px"></div></div>
+</div>
+</section>
+
+<section id="reports" class="page">
+<div class="card"><h2>📊 Weekly income & expenses</h2><div class="row"><div><label for="reportStart">Week starting (Monday)</label><input type="date" id="reportStart"></div><div style="align-self:end"><button class="primary" onclick="renderReport()">Build weekly report</button> <button class="secondary" onclick="exportCSV()">Export CSV</button></div></div>
+<div class="metrics" style="margin-top:14px"><div class="metric"><div class="label">Income</div><div class="num" id="rIncome">0</div></div><div class="metric"><div class="label">Expenses</div><div class="num" id="rExpense">0</div></div><div class="metric"><div class="label">Net balance</div><div class="num" id="rNet">0</div></div><div class="metric"><div class="label">Transactions</div><div class="num" id="rCount">0</div></div></div>
+<h3>Daily breakdown</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Net</th></tr></thead><tbody id="dailyRows"></tbody></table></div>
+<h3 style="margin-top:20px">Category breakdown</h3><div class="table-wrap"><table><thead><tr><th>Category</th><th class="num">Income</th><th class="num">Expenses</th></tr></thead><tbody id="categoryRows"></tbody></table></div>
+<h3 style="margin-top:20px">Transactions for this week</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody id="transactionRows"></tbody></table></div>
+<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="secondary" onclick="window.print()">Print / Save as PDF</button><button class="secondary" onclick="backupData()">Download full backup (JSON)</button><label class="secondary" style="cursor:pointer">Restore backup <input type="file" id="restoreFile" accept=".json,application/json" style="display:none"></label></div>
+</div>
+<div class="card" style="margin-top:14px"><h2>Useful ideas included</h2><div class="row"><div><h3>🎯 Weekly review</h3><p class="muted">Choose one goal, review income vs expenses, and plan next week.</p></div><div><h3>🧠 Capture everything</h3><p class="muted">Voice notes for quick thoughts; photos for receipts, meals and progress.</p></div><div><h3>🔐 Your data</h3><p class="muted">Entries stay in this browser on this device. Export a backup regularly. Clearing browser data may erase them.</p></div></div></div>
+</section>
+<div class="notice" style="margin-top:16px">Privacy note: this starter app stores information locally in your browser; it does not automatically sync to another phone or send anything to a server. Photos and audio use device storage, so keep backups and avoid uploading sensitive material.</div>
+</main><div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const keys=['tasks','money','health','photos','voices','notes'];
+let db={}; keys.forEach(k=>{try{db[k]=JSON.parse(localStorage.getItem('lifepilot_'+k)||'[]')}catch{db[k]=[]}});
+let goal={};try{goal=JSON.parse(localStorage.getItem('lifepilot_goal')||'{}')}catch{}
+let audioRecorder=null,audioChunks=[],pendingAudio=null;
+function save(k){localStorage.setItem('lifepilot_'+k,JSON.stringify(db[k]));}
+function today(){return new Date().toLocaleDateString('en-CA')}
+function money(n){return (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2})+' SM'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2300)}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='reports')renderReport();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function monday(d=new Date()){let x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x.toLocaleDateString('en-CA')}
+function sumMoney(type, start=null,end=null){return db.money.filter(x=>x.type===type&&(!start||x.date>=start)&&(!end||x.date<=end)).reduce((a,x)=>a+Number(x.amount),0)}
+function renderTasks(){let filter=$('scheduleFilter').value;let items=db.tasks.filter(t=>!filter||t.date===filter).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));$('taskList').innerHTML=items.length?items.map(t=>`<div class="item ${t.done?'done':''}"><div class="main"><div class="item-title">${esc(t.title)} <span class="tag">${esc(t.category)}</span></div><small>${esc(t.date)} ${esc(t.time||'')} · ${esc(t.priority)}${t.note?' · '+esc(t.note):''}</small><label style="margin-top:7px;font-weight:500"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}',this.checked)"> Completed</label></div><button class="danger" onclick="delItem('tasks','${t.id}')">×</button></div>`).join(''):'<div class="empty">No schedule items yet. Add one to start planning.</div>';
+let td=db.tasks.filter(t=>t.date===today());$('homeTasks').innerHTML=td.length?td.sort((a,b)=>(a.time||'').localeCompare(b.time||'')).map(t=>`<div class="item ${t.done?'done':''}"><div class="main"><div class="item-title">${esc(t.time||'Any time')} — ${esc(t.title)}</div><small>${esc(t.category)}</small></div><input type="checkbox" ${t.done?'checked':''} aria-label="Complete task" onchange="toggleTask('${t.id}',this.checked)"></div>`).join(''):'<div class="empty">Your day is open. Add a task or appointment.</div>';
+$('mTasks').textContent=td.filter(t=>t.done).length+'/'+td.length;}
+function toggleTask(id,v){let t=db.tasks.find(x=>x.id===id);if(t){t.done=v;save('tasks');renderTasks();renderHome()}}
+function renderMoney(){let xs=[...db.money].sort((a,b)=>(b.date).localeCompare(a.date));$('moneyList').innerHTML=xs.length?xs.slice(0,30).map(x=>`<div class="item"><div class="main"><div class="item-title">${esc(x.title)} <span class="tag">${esc(x.category)}</span></div><small>${esc(x.date)} · ${esc(x.method)}</small></div><div style="text-align:right"><div class="${x.type==='income'?'money-in':'money-out'}">${x.type==='income'?'+':'−'}${money(x.amount)}</div><button class="danger" style="margin-top:5px" onclick="delItem('money','${x.id}')">Delete</button></div></div>`).join(''):'<div class="empty">No transactions recorded yet.</div>';
+$('allIncome').textContent=money(sumMoney('income'));$('allExpense').textContent=money(sumMoney('expense'));}
+function renderHealth(){let xs=[...db.health].sort((a,b)=>b.date.localeCompare(a.date));$('healthList').innerHTML=xs.length?xs.slice(0,20).map(x=>`<div class="item"><div class="main"><div class="item-title">${esc(x.date)} ${x.weight?'<span class="tag">'+esc(x.weight)+' kg</span>':''}</div><small>Water: ${esc(x.water||'—')} L · Sleep: ${esc(x.sleep||'—')} h · Exercise: ${esc(x.exercise||'—')} min · Steps: ${esc(x.steps||'—')} · Meals: ${esc(x.meals||'—')}</small>${x.note?`<p style="margin:7px 0 0;white-space:pre-wrap">${esc(x.note)}</p>`:''}</div><button class="danger" onclick="delItem('health','${x.id}')">×</button></div>`).join(''):'<div class="empty">Log your water, sleep, movement and food here.</div>';
+let x=db.health.find(h=>h.date===today());let checks=[['Water logged',x&&x.water],['Sleep logged',x&&x.sleep],['Movement logged',x&&x.exercise],['Food / notes logged',x&&x.note]];let count=checks.filter(c=>c[1]!==''&&c[1]!==null&&c[1]!==undefined&&c[1]!==false).length;$('habitSummary').innerHTML=`<div style="font-size:25px;font-weight:800">${count}/4</div><div class="progress"><span style="width:${count*25}%"></span></div>`+checks.map(c=>`<div style="margin:7px 0">${c[1]!==''&&c[1]!==null&&c[1]!==undefined&&c[1]!==false?'✅':'◯'} ${c[0]}</div>`).join('')}
+function renderJournal(){ $('voiceList').innerHTML=db.voices.length?[...db.voices].reverse().map(v=>`<div class="item"><div class="main"><div class="item-title">${esc(v.title||'Voice note')}</div><small>${esc(v.date)} · ${esc(v.size||'Audio')}</small><audio controls src="${v.url}" style="width:100%;margin-top:8px"></audio></div><button class="danger" onclick="delItem('voices','${v.id}')">×</button></div>`).join(''):'<div class="empty">Your voice notes will appear here.</div>';
+$('photoList').innerHTML=db.photos.length?[...db.photos].reverse().map(p=>`<div class="photo"><img src="${p.data}" alt="${esc(p.title)}"><div><b>${esc(p.title||'Photo')}</b><br><span class="muted">${esc(p.date)}</span><br><button class="danger" style="margin-top:7px" onclick="delItem('photos','${p.id}')">Delete</button></div></div>`).join(''):'<div class="muted">No photos yet.</div>';
+$('noteList').innerHTML=db.notes.length?[...db.notes].reverse().map(n=>`<div class="item"><div class="main"><div class="item-title">${esc(n.date)}</div><div style="white-space:pre-wrap;margin-top:5px">${esc(n.text)}</div></div><button class="danger" onclick="delItem('notes','${n.id}')">×</button></div>`).join(''):'';
+}
+function renderHome(){let s=monday(),e=new Date(s+'T12:00:00');e.setDate(e.getDate()+6);let end=e.toLocaleDateString('en-CA');let inc=sumMoney('income',s,end),out=sumMoney('expense',s,end);$('mIncome').textContent=money(inc);$('mExpense').textContent=money(out);$('mNet').textContent=money(inc-out);$('mNet').style.color=inc-out>=0?'var(--green)':'var(--red)';if(goal.text){$('goalDisplay').textContent='Current goal: '+goal.text+(goal.date?' · review by '+goal.date:'');$('weeklyGoal').value=goal.text;$('weeklyGoalDate').value=goal.date||''}else $('goalDisplay').textContent='No weekly goal yet — choose one small, measurable target.';renderTasks();renderHealth()}
+function renderReport(){let start=$('reportStart').value||monday();$('reportStart').value=start;let e=new Date(start+'T12:00:00');e.setDate(e.getDate()+6);let end=e.toLocaleDateString('en-CA');let xs=db.money.filter(x=>x.date>=start&&x.date<=end);let inc=xs.filter(x=>x.type==='income').reduce((a,x)=>a+ +x.amount,0),out=xs.filter(x=>x.type==='expense').reduce((a,x)=>a+ +x.amount,0);$('rIncome').textContent=money(inc);$('rExpense').textContent=money(out);$('rNet').textContent=money(inc-out);$('rNet').style.color=inc-out>=0?'var(--green)':'var(--red)';$('rCount').textContent=xs.length;
+let days=[];for(let i=0;i<7;i++){let d=new Date(start+'T12:00:00');d.setDate(d.getDate()+i);let ds=d.toLocaleDateString('en-CA'),di=xs.filter(x=>x.date===ds&&x.type==='income').reduce((a,x)=>a+ +x.amount,0),de=xs.filter(x=>x.date===ds&&x.type==='expense').reduce((a,x)=>a+ +x.amount,0);days.push(`<tr><td>${ds}</td><td class="num money-in">${money(di)}</td><td class="num money-out">${money(de)}</td><td class="num">${money(di-de)}</td></tr>`)}$('dailyRows').innerHTML=days.join('');
+let cats={};xs.forEach(x=>{cats[x.category]??={income:0,expense:0};cats[x.category][x.type]+=Number(x.amount)});$('categoryRows').innerHTML=Object.keys(cats).length?Object.entries(cats).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num money-in">${money(v.income)}</td><td class="num money-out">${money(v.expense)}</td></tr>`).join(''):'<tr><td colspan="3">No transactions this week.</td></tr>';
+$('transactionRows').innerHTML=xs.length?[...xs].sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<tr><td>${esc(x.date)}</td><td>${x.type==='income'?'Income':'Expense'}</td><td>${esc(x.category)}</td><td>${esc(x.title)}</td><td class="num ${x.type==='income'?'money-in':'money-out'}">${money(x.amount)}</td></tr>`).join(''):'<tr><td colspan="5">No transactions this week.</td></tr>'}
+function delItem(k,id){if(!confirm('Delete this item?'))return;db[k]=db[k].filter(x=>x.id!==id);save(k);refresh()}
+function refresh(){renderHome();renderMoney();renderHealth();renderJournal();renderReport()}
+function saveGoal(){goal={text:$('weeklyGoal').value.trim(),date:$('weeklyGoalDate').value};localStorage.setItem('lifepilot_goal',JSON.stringify(goal));renderHome();toast('Weekly goal saved')}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+$('taskForm').addEventListener('submit',e=>{e.preventDefault();db.tasks.push({id:id(),title:$('taskTitle').value.trim(),date:$('taskDate').value,time:$('taskTime').value,category:$('taskCategory').value,priority:$('taskPriority').value,note:$('taskNote').value.trim(),done:false});save('tasks');e.target.reset();$('taskDate').value=today();renderTasks();renderHome();toast('Added to your schedule')});
+$('scheduleFilter').addEventListener('change',renderTasks);
+$('moneyForm').addEventListener('submit',e=>{e.preventDefault();db.money.push({id:id(),type:$('moneyType').value,amount:Number($('moneyAmount').value),date:$('moneyDate').value,category:$('moneyCategory').value,title:$('moneyTitle').value.trim(),method:$('moneyMethod').value});save('money');e.target.reset();$('moneyDate').value=today();renderMoney();renderHome();renderReport();toast('Transaction saved')});
+$('healthForm').addEventListener('submit',e=>{e.preventDefault();let obj={date:$('healthDate').value,water:$('water').value,sleep:$('sleep').value,weight:$('weight').value,steps:$('steps').value,exercise:$('exercise').value,meals:$('meals').value,note:$('foodNote').value.trim()};let old=db.health.findIndex(x=>x.date===obj.date);if(old>=0)db.health[old]={...db.health[old],...obj};else db.health.push({...obj,id:id()});save('health');renderHealth();renderHome();toast('Daily log saved')});
+$('noteForm').addEventListener('submit',e=>{e.preventDefault();if(!$('quickNote').value.trim())return;db.notes.push({id:id(),date:today(),text:$('quickNote').value.trim()});save('notes');$('quickNote').value='';renderJournal();toast('Note saved')});
+$('photoForm').addEventListener('submit',e=>{e.preventDefault();let f=$('photoFile').files[0];if(!f)return;if(f.size>3*1024*1024){toast('Please choose a photo under 3 MB');return}let r=new FileReader();r.onload=()=>{db.photos.push({id:id(),title:$('photoTitle').value.trim()||'Photo',date:$('photoDate').value,data:r.result});try{save('photos');renderJournal();e.target.reset();$('photoDate').value=today();toast('Photo saved')}catch(err){db.photos.pop();toast('Storage full. Export backup or use a smaller photo.')}};r.readAsDataURL(f)});
+$('recordBtn').addEventListener('click',async()=>{try{if(!navigator.mediaDevices||!window.MediaRecorder){toast('Voice recording is not supported in this browser. Try Chrome.');return}let stream=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];audioRecorder=new MediaRecorder(stream);audioRecorder.ondataavailable=e=>{if(e.data.size)audioChunks.push(e.data)};audioRecorder.onstop=()=>{let blob=new Blob(audioChunks,{type:audioRecorder.mimeType||'audio/webm'});pendingAudio={blob,url:URL.createObjectURL(blob),title:$('voiceTitle').value.trim()||'Voice note',date:$('voiceDate').value||today(),size:(blob.size/1024).toFixed(0)+' KB'};let reader=new FileReader();reader.onload=()=>{pendingAudio.data=reader.result;db.voices.push({id:id(),title:pendingAudio.title,date:pendingAudio.date,size:pendingAudio.size,data:pendingAudio.data});try{save('voices');renderJournal();$('recordStatus').textContent='Recording saved.';toast('Voice note saved')}catch{db.voices.pop();toast('Storage full. Delete old recordings or export backup.')}};reader.readAsDataURL(blob);stream.getTracks().forEach(t=>t.stop());$('recordBtn').disabled=false;$('stopBtn').disabled=true};audioRecorder.start();$('recordBtn').disabled=true;$('stopBtn').disabled=false;$('recordStatus').textContent='Recording… speak clearly, then press Stop.'}catch(e){toast('Microphone permission was denied or unavailable.')}})
+$('stopBtn').addEventListener('click',()=>{if(audioRecorder&&audioRecorder.state!=='inactive')audioRecorder.stop()});
+function exportCSV(){let start=$('reportStart').value||monday(),d=new Date(start+'T12:00:00');d.setDate(d.getDate()+6);let end=d.toLocaleDateString('en-CA');let xs=db.money.filter(x=>x.date>=start&&x.date<=end);let rows=[['Date','Type','Category','Description','Amount','Payment method'],...xs.map(x=>[x.date,x.type,x.category,x.title,x.amount,x.method])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');download('lifepilot-week-'+start+'.csv',csv,'text/csv;charset=utf-8;');}
+function backupData(){let all={version:1,exportedAt:new Date().toISOString(),db,goal};download('lifepilot-backup-'+today()+'.json',JSON.stringify(all), 'application/json')}
+function download(name,content,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$('restoreFile').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.db||!keys.every(k=>Array.isArray(d.db[k])))throw Error();if(!confirm('Restore backup and replace current LifePilot data?'))return;db=d.db;goal=d.goal||{};keys.forEach(save);localStorage.setItem('lifepilot_goal',JSON.stringify(goal));refresh();toast('Backup restored')}catch{toast('Invalid backup file')}e.target.value=''};r.readAsText(f)});
+function init(){let d=today();$('todayPill').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',year:'numeric',month:'short',day:'numeric'});['taskDate','scheduleFilter','moneyDate','healthDate','voiceDate','photoDate'].forEach(k=>$(k).value=d);$('reportStart').value=monday();refresh()}
+init();
+</script>
+</body></html>
